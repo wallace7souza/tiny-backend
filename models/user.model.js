@@ -12,13 +12,16 @@ module.exports = function(sequelize, DataTypes) {
             unique: true,
             notEmpty: true
         },
+        language: {
+            type: DataTypes.STRING
+        },
+        timezone: {
+            type: DataTypes.STRING
+        },
         firstName: {
             type: DataTypes.STRING
         },
         lastName: {
-            type: DataTypes.STRING
-        },
-        telefoneCelular: {
             type: DataTypes.STRING
         },
         hashedPassword: {
@@ -31,19 +34,19 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING
         },
         role: {
-            type: DataTypes.ENUM('ADMIN','USER')
+            type: DataTypes.ENUM('MASTER', 'ADMIN', 'USER')
         },
         status: {
             type: DataTypes.ENUM('ENABLED', 'DISABLED')
-        },
-        cpf: {
-            type: DataTypes.STRING
         }
     }, {
         instanceMethods: {
 
         },
         associate: function(models) {
+
+
+
 
 
         }

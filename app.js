@@ -3,6 +3,7 @@ var express = require('express');
 var glob = require('glob');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var cors = require('cors')
 
 var passport = require('passport');
 var passportJWT = require('passport-jwt');
@@ -36,6 +37,7 @@ var strategy = new JwtStrategy(params, function (jwt_payload, next) {
 passport.use(strategy);
 
 var app = express();
+app.use(cors());
 
 function startup() {
 
