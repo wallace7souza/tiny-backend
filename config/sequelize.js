@@ -7,7 +7,7 @@ var Sequelize = require('sequelize');
 var _ = require('lodash');
 var config = require('./env/'+NODE_ENV+'.js');
 var db = {};
-
+var authenticateService = require('../service/authenticate.service');
 
 var models = module.exports = {
     Sequelize: Sequelize,
@@ -67,8 +67,8 @@ function init(callback) {
                 //winston.info('Database ' + (config.forceSequelizeSync ? '*DROPPED* and ' : '') + 'synchronized');
                 models.sequelize = sequelize;
                 _.extend(models, db);
-                //setupAdminUser(callback);
-                callback();
+                setupAdminUser(callback);
+                // callback();
             }).catch(function (err) {
 
             console.error(err);
@@ -98,19 +98,33 @@ function init(callback) {
     }
 
     function setupAdminUser(callback) {
-        var userController = require('../models/User/user.controller');
         db.User.findOne({where: {email: 'admin@localhost.com'}}).then(function (user) {
             if (!user) {
-                userController.save({
+
+                var crypto = require('crypto');
+
+                //req.body is user json model
+                let adminUser = {
                     username:'admin',
                     'email':'admin@localhost.com',
-                    'password':env==='development'?'admin':'rbr@prod#7',
+                    'password':NODE_ENV==='development'?'admin':'rbr@prod#7',
                     'role':'MASTER',
                     'status':'ENABLED'
-                },function(){
+                };
+                var user = db.User.build(adminUser);
+
+                user.provider = 'local';
+                user.salt = crypto.randomBytes(16).toString('base64');
+
+                var salt2 = new Buffer(user.salt, 'base64');
+                try{
+                    // console.log(crypto.getHashes());
+                    user.hashedPassword = crypto.pbkdf2Sync(adminUser.password, salt2, 10000, 64,'sha1').toString('base64');
+                }catch(err){
+                    console.log(err);
+                }
+                user.save().then(function(){
                     callback();
-                },function(err){
-                    winston.error('An error occured: %j', err.message || JSON.stringify(err));
                 })
             }else{
                 callback();
