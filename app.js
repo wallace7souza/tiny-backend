@@ -122,6 +122,8 @@ function startup() {
                                         return;
                                     }
                                 })
+
+                                next();
                                 
                             }
 
@@ -131,8 +133,13 @@ function startup() {
                     chainResponse.push(controller[functionName]);
 
 
-                    let routeMethod = '/api' + (controller.prefix ? '/' + controller.prefix : '') + routerAnotations[functionName].path;
-                    app.route(routeMethod)[requestMethod](chainResponse);
+                    var routeMethod = null
+
+                    if(routerAnotations[functionName].path){
+                        routeMethod = '/api' + (controller.prefix ? '/' + controller.prefix : '') + routerAnotations[functionName].path;
+                    }else{
+                        routeMethod = '/api' + (controller.prefix ? '/' + controller.prefix : '') + routerAnotations[functionName][requestMethod.toUpperCase()];
+                    }
 
                     console.log(requestMethod, routeMethod);
                 }
