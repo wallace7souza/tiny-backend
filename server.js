@@ -21,9 +21,28 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = null;//http.createServer(app);
-var http = require('http');
-server = http.createServer(app);
+var server = null;
+
+var serverKey = '/etc/nginx/conf.d/cert_dev/cloud.key';
+var serverCrt = '/etc/nginx/conf.d/cert_dev/cloud.pem';
+
+if( (ENV_SECURITY && envConfig.app.security) && fs.existsSync(serverKey) && fs.existsSync(serverCrt) ){
+
+    var https = require('https');
+    server = https.createServer({
+        key: fs.readFileSync(serverKey),
+        cert: fs.readFileSync(serverCrt)
+    }, app);
+
+}else{
+    var http = require('http');
+    server = http.createServer(app);
+}
+
+
+
+// var http = require('http');
+// server = http.createServer(app);
 
 /*var io = require('socket.io')(server);
 

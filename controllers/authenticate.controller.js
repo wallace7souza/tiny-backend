@@ -1,6 +1,5 @@
 var db = require('../config/sequelize');
 
-
 /**
  *
  * @POST
@@ -25,15 +24,16 @@ exports.authenticate = function (req, res, next) {
         } else {//if(req.body.cpf){
             where.cpf = userId;
         }
-        where.status = 'ENABLED';
+        // where.status = 'ENABLED';
 
         db.User.find({where: where}).then(function (user) {
 
-            if (!user) {
+            if (!user)  {
                 res.type('json');
                 //done(null, false, { message: 'Unknown user' });
                 res.status(401).send({message: 'Unknown user'});
-            } else {
+            }
+             else {
 
                 var crypto = require('crypto');
                 var salt2 = new Buffer(user.salt, 'base64');
@@ -42,7 +42,7 @@ exports.authenticate = function (req, res, next) {
                 if (hashedPassword == user.hashedPassword) {
                     var jwt = require("jwt-simple");
                     var cfg = require('../config/env/' + NODE_ENV + '.js');
-                    var payload = {id: user.id, username: user.username};
+                    var payload = {id: user.id, username: user.username,role:user.role};
                     if (!req.body.rememberMe) {
 
                     }
@@ -69,6 +69,7 @@ exports.authenticate = function (req, res, next) {
 /**
  * @POST
  * @path /update-password
+ * @authenticated
  */
 exports.updatePassword = (req, res, next) => {
 
@@ -77,15 +78,15 @@ exports.updatePassword = (req, res, next) => {
     var crypto = require('crypto');
     var salt2 = new Buffer(user.salt, 'base64');
 
-    var hashedPassword = crypto.pbkdf2Sync(req.body.currentPassword, salt2, 10000, 64).toString('base64');
+    var hashedPassword = crypto.pbkdf2Sync(req.body.currentPassword, salt2, 10000, 64,'sha1').toString('base64');
 
 
     if (user.hashedPassword != hashedPassword) {
-        res.status(400).send({error: 'Current password invalid'});
+        res.status(400).send({error: 'Senha atual inválida'});
         return;
     } else {
 
-        user.hashedPassword = crypto.pbkdf2Sync(req.body.newPassword, salt2, 10000, 64).toString('base64');
+        user.hashedPassword = crypto.pbkdf2Sync(req.body.newPassword, salt2, 10000, 64,'sha1').toString('base64');
 
         user.save().then(function () {
             res.send();
@@ -125,7 +126,7 @@ exports.create = function (req, res, next) {
     user.save().then(function (user) {
         res.json(user);
     }).catch(function (err) {
-        res.sendStatus(500).send(err);
+        res.status(500).send(err);
     });
 
-}
+};

@@ -1,4 +1,4 @@
-let PROCESS_ENV = null;
+let PROCESS_ENV = null,ENV_SECURITY = null;
 var path = require("path");
 var resolve = path.resolve;
 var fs = require('fs');
@@ -8,9 +8,23 @@ process.argv.forEach(function (val, index, array) {
         let processenv = val.replace('NODE_ENV=','');
         PROCESS_ENV = processenv;
     }
+    if (val.indexOf('ENV_SECURITY=') > -1) {
+        let envParam = val.replace('ENV_SECURITY=','');
+        ENV_SECURITY = (envParam === 'true');
+    }
 });
 
 global.NODE_ENV = PROCESS_ENV || process.env.NODE_ENV || 'development';
+global.ENV_SECURITY = null; //ENV_SECURITY || (process.env.ENV_SECURITY ? JSON.parse(process.env.ENV_SECURITY):null) || true;
+
+if(ENV_SECURITY){
+    global.ENV_SECURITY = ENV_SECURITY;
+}else if(process.env.ENV_SECURITY){
+    global.ENV_SECURITY = JSON.parse(process.env.ENV_SECURITY);
+}else{
+    global.ENV_SECURITY = true;
+}
+
 
 
 let path1 = resolve('./config/env/' + NODE_ENV + '.js');
@@ -46,9 +60,17 @@ var strategy = new JwtStrategy(params, function (jwt_payload, next) {
     console.log('payload received', jwt_payload);
     // usually this would be a database call:
 
+    if(!jwt_payload.role){
+        next(null, false);
+        return;
+    }
     db.User.findOne({where: {id: jwt_payload.id, status: 'ENABLED'}}).then(function (user) {
         if (user) {
-            next(null, user);
+            if(user.role!==jwt_payload.role){
+                next(null, false);
+            }else{
+                next(null, user);
+            }
         } else {
             next(null, false);
         }
@@ -59,8 +81,11 @@ passport.use(strategy);
 
 var app = express();
 app.use(cors());
+app.use(bodyParser.json({limit: '500mb'}));
+app.use(bodyParser.urlencoded({limit: '500mb'}));
+
 forceSsl.https_port = config.app.port;
-if (process.env.NODE_ENV && process.env.NODE_ENV === 'production') {
+if (global.ENV_SECURITY && config.app.security) {
     app.use(forceSsl);
 }
 
