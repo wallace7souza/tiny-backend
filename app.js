@@ -17,7 +17,7 @@ process.argv.forEach(function (val, index, array) {
 global.NODE_ENV = PROCESS_ENV || process.env.NODE_ENV || 'development';
 global.ENV_SECURITY = null; //ENV_SECURITY || (process.env.ENV_SECURITY ? JSON.parse(process.env.ENV_SECURITY):null) || true;
 
-if(ENV_SECURITY){
+if(ENV_SECURITY!--null){
     global.ENV_SECURITY = ENV_SECURITY;
 }else if(process.env.ENV_SECURITY){
     global.ENV_SECURITY = JSON.parse(process.env.ENV_SECURITY);
