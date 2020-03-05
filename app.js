@@ -2,6 +2,9 @@ let PROCESS_ENV = null,ENV_SECURITY = null;
 var path = require("path");
 var resolve = path.resolve;
 var fs = require('fs');
+var cron = require('node-cron');
+
+var taskCronList = [];
 
 process.argv.forEach(function (val, index, array) {
     if (val.indexOf('NODE_ENV=') > -1) {
@@ -17,7 +20,7 @@ process.argv.forEach(function (val, index, array) {
 global.NODE_ENV = PROCESS_ENV || process.env.NODE_ENV || 'development';
 global.ENV_SECURITY = null; //ENV_SECURITY || (process.env.ENV_SECURITY ? JSON.parse(process.env.ENV_SECURITY):null) || true;
 
-if(ENV_SECURITY!--null){
+if(ENV_SECURITY!==null){
     global.ENV_SECURITY = ENV_SECURITY;
 }else if(process.env.ENV_SECURITY){
     global.ENV_SECURITY = JSON.parse(process.env.ENV_SECURITY);
@@ -239,7 +242,8 @@ function startup() {
             Object.keys(routerAnotations).forEach(function (functionName) {
 
                 if (routerAnotations[functionName].CronJob) {
-                    let cronJob = new CronJob(routerAnotations[functionName].CronJob, service[functionName], null, true, 'America/Sao_Paulo');
+                    // let cronJob = new CronJob(routerAnotations[functionName].CronJob, service[functionName], null, true, 'America/Sao_Paulo');
+                    taskCronList.push(cron.schedule(routerAnotations[functionName].CronJob.trim(), serviceElement, {timezone: "America/Sao_Paulo"}))
                 }
                 if (routerAnotations[functionName].Init) {
                     service[functionName]();
