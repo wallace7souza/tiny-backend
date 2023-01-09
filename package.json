@@ -27,7 +27,7 @@
     "mysql2": "^1.5.3",
     "node-cron": "^2.0.3",
     "passport": "^0.4.0",
-    "passport-jwt": "^4.0.0",
+    "passport-jwt": "^4.0.1",
     "request": "^2.86.0",
     "sequelize": "^5.15.1"
   }
